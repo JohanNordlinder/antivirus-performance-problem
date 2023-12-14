@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 
 @Component
@@ -22,17 +23,21 @@ class TestDataSetup(val repo: TestdataEntityRepository, val em: EntityManager) {
     fun createTestDataInDatabase(): Boolean {
         val rowsToCreate = 10000
         val start = Instant.now();
-        log.info("Starting to create $rowsToCreate rows of test data in database...")
 
-        for (i in 1..rowsToCreate) {
-            repo.save(TestdataEntity(null, randomString()))
-            if (i % 100 == 0) {
+        log.info("Preparing $rowsToCreate objects of testdata...")
+        val entities = (1..rowsToCreate).map { TestdataEntity(null, randomString()) }.toList()
+
+        log.info("Starting to store $rowsToCreate objects (rows) of test data to database...")
+        val countCreated = AtomicInteger(0)
+        entities.parallelStream().forEach {
+            repo.save(it)
+            val newCountCreated = countCreated.incrementAndGet()
+            if (newCountCreated % 100 == 0) {
                 log.info(
-                    "Finished creating $i rows, total elapsed time: ${
+                    "Finished creating $newCountCreated rows, total elapsed time: ${
                         Duration.between(start, Instant.now()).toSeconds()
                     }s"
                 )
-                em.clear()
             }
         }
 
