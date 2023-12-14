@@ -1,0 +1,5 @@
+spring:
+  flyway:
+    schemas: public
+    locations:
+      - classpath:db/migration
