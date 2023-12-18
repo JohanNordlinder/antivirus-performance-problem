@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
+import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -36,6 +37,7 @@ public class EmbeddedPostgresConfiguration {
         if (SystemUtils.OS_NAME.toLowerCase().contains("windows")) {
             // Flytta temp-dir till en katalog där vi kan styra antivirusprogrammet bättre
             pgb.setDataDirectory("c:\\dev\\embedded_pg_temp\\demo\\" + Calendar.getInstance().getTimeInMillis());
+            pgb.setOverrideWorkingDirectory(new File("c:\\dev\\embedded_pg_temp\\binaries"));
         }
 
         return pgb.start();
